@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+[Unit]
+Description=PiFan
+
 [Service]
 WorkingDirectory=/home/pi/PiFan/
 ExecStart=/home/pi/PiFan/PiFan.py

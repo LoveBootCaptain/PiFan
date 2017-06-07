@@ -42,7 +42,6 @@ temp_fan_logger.addHandler(handler)
 
 # generic log function with print
 def log_message(message):
-
     temp_fan_logger.info(message)
     print(message)
 
@@ -61,7 +60,6 @@ fan = GPIO.PWM(fan_pin, frequency)
 
 # create exit handler
 def exit_handler():
-
     fan.stop()
     GPIO.cleanup()
     log_message('Exit PiFan')
@@ -69,9 +67,7 @@ def exit_handler():
 
 # read the cpu temp and return it
 def read_cpu_temp():
-
     with open('/sys/class/thermal/thermal_zone0/temp') as temp:
-
         current_temp = float(temp.read()) / 1000
         log_message('CPU Temp: {} °C'.format(current_temp))
 
@@ -80,13 +76,22 @@ def read_cpu_temp():
 
 # set the fan speed depending on temp
 def set_fan_speed(temp):
-
     if temp > 50.0:
 
         fan.ChangeDutyCycle(100)
         log_message('CPU Fan: 100%')
 
-    elif temp < 50.0:
+    elif temp > 47.0:
+
+        fan.ChangeDutyCycle(90)
+        log_message('CPU Fan: 90%')
+
+    elif temp > 45.0:
+
+        fan.ChangeDutyCycle(75)
+        log_message('CPU Fan: 75%')
+
+    elif temp < 45.0:
 
         fan.ChangeDutyCycle(50)
         log_message('CPU Fan: 50%')
@@ -102,7 +107,6 @@ if __name__ == '__main__':
         atexit.register(exit_handler)
 
         while True:
-
             # run the loop
             set_fan_speed(read_cpu_temp())
 
