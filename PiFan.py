@@ -1,6 +1,12 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# PiFan is a python program to control a fan with a transistor.
+# It uses on/ff as well as a kind of voltage regulation by turning the transitor om/of
+# very very fast to "modulate" the output voltage.
+
+# please adafruit make a AC motor driver with voltage regulation for venting the pi's !!!
+
 # MIT License
 #
 # Copyright (c) 2016 LoveBootCaptain (https://github.com/LoveBootCaptain)
@@ -48,26 +54,32 @@ def log_message(message):
 
 # setup GPIO
 fan_pin = 21
-frequency = 50
+frequency = 15
 
 GPIO.setwarnings(False)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(fan_pin, GPIO.OUT)
 
-fan = GPIO.PWM(fan_pin, frequency)
+
+def set_pin(mode):
+    GPIO.output(fan_pin, mode)
+    return
 
 
 # create exit handler
 def exit_handler():
-    fan.stop()
+
+    set_pin(False)
     GPIO.cleanup()
     log_message('Exit PiFan')
 
 
 # read the cpu temp and return it
 def read_cpu_temp():
+
     with open('/sys/class/thermal/thermal_zone0/temp') as temp:
+
         current_temp = float(temp.read()) / 1000
         log_message('CPU Temp: {} °C'.format(current_temp))
 
@@ -76,41 +88,53 @@ def read_cpu_temp():
 
 # set the fan speed depending on temp
 def set_fan_speed(temp):
-    if temp > 50.0:
 
-        fan.ChangeDutyCycle(100)
+    current_temp = temp
+
+    if current_temp > 50:
+
+        set_pin(True)
+
         log_message('CPU Fan: 100%')
 
-    elif temp > 47.0:
+        time.sleep(frequency)
 
-        fan.ChangeDutyCycle(90)
-        log_message('CPU Fan: 90%')
+        return
 
-    elif temp > 45.0:
+    else:
 
-        fan.ChangeDutyCycle(75)
-        log_message('CPU Fan: 75%')
-
-    elif temp < 45.0:
-
-        fan.ChangeDutyCycle(50)
         log_message('CPU Fan: 50%')
+
+        for j in range(frequency):
+
+            for i in range(20):  # loop should run 1sec
+
+                set_pin(True)
+                time.sleep(0.025)
+
+                set_pin(False)
+                time.sleep(0.025)
+
+        return
 
 
 if __name__ == '__main__':
 
+    # register exit handler
+    atexit.register(exit_handler)
+
     try:
         # start the fan on program start
-        fan.start(100)
+        log_message('Starting PiFan at 100% for 1sec')
 
-        # register exit handler
-        atexit.register(exit_handler)
+        set_pin(True)
+        time.sleep(1)
+
+        log_message('Running Fan regulation now')
 
         while True:
             # run the loop
             set_fan_speed(read_cpu_temp())
-
-            time.sleep(15)
 
     except KeyboardInterrupt:
 
