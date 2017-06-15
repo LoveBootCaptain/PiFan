@@ -5,7 +5,7 @@
 # It uses on/ff as well as a kind of voltage regulation by turning the transitor om/of
 # very very fast to "modulate" the output voltage.
 
-# please adafruit make a AC motor driver with voltage regulation for venting the pi's !!!
+# please adafruit make an AC motor driver with voltage regulation for venting the pi's from internal 5V !!!
 
 # MIT License
 #
